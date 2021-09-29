@@ -1,0 +1,17 @@
+batch_norm: true
+channels: !!python/tuple
+- 32
+- 64
+- 128
+- 256
+- 256
+- 512
+downsampling: 3
+init_bias_zero: true
+jittering_std: 0.005
+lr: 0.0001
+scales: 6
+skip_channels: 16
+step: 0
+use_sigmoid: true
+which_loss: mse
