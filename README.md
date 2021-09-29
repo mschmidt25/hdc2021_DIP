@@ -9,7 +9,8 @@ Install the package using:
 pip install -e .
 ```
 
-Please download the weights from the following link: TODO
+Please download the weights from the following link: 
+https://seafile.zfn.uni-bremen.de/d/a90a26b1721b461db30a/
 Afterwards, move them to "hdc2021_challenge/weights/deblurring/unet_deblurring/"
 
 ## Usage 
