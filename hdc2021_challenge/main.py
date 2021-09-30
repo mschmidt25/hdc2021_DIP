@@ -23,7 +23,7 @@ def main(input_files, output_files, step):
     experiment_name = 'deblurring' 
     version = 'unet_deblurring'
     chkp_name = ''
-    path_parts = [base_path, 'weights', experiment_name, version, chkp_name]
+    path_parts = [base_path, experiment_name, version, chkp_name]
     path_to_weights = os.path.join(*path_parts)
 
     # Create reconstructor
