@@ -73,26 +73,26 @@ A seperate U-Net model for each blurring step was trained on the blurry text ima
 
 ### Reference results
 OCR accuracy on our test set (20 images per step):
-- 0:
-- 1:
-- 2:
-- 3:
-- 4:
-- 5:
-- 6:
-- 7:
-- 8:
-- 9:
-- 10:
-- 11:
-- 12:
-- 13:
-- 14:
-- 15:
-- 16:
-- 17:
-- 18:
-- 19:
+- 0: 81.60
+- 1: 86.40
+- 2: 81.50
+- 3: 92.45
+- 4: 88.90
+- 5: 80.80
+- 6: 84.70
+- 7: 83.95
+- 8: 79.75
+- 9: 74.40
+- 10: 77.80
+- 11: 70.25
+- 12: 73.20
+- 13: 67.65
+- 14: 78.60
+- 15: 57.65
+- 16: 45.70
+- 17: 40.70
+- 18: 29.25
+- 19: 26.15
 
 ## Authors
 Team University of Bremen, Center of Industrial Mathematics (ZeTeM) et al.:
