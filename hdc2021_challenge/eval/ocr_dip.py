@@ -1,3 +1,7 @@
+"""
+Evaluate the DIP OCR performance on the test set.
+"""
+
 import os
 from pathlib import Path
 
@@ -13,7 +17,13 @@ from hdc2021_challenge.utils.blurred_dataset import BlurredDataModule
 from hdc2021_challenge.deblurrer.DIP_deblurrer import DIPDeblurrer
 
 
-path_to_weights = "../weights/deblurring/unet_deblurring/"
+# General path to the U-Net weights
+base_path = os.path.join(os.path.dirname(__file__), '..')
+experiment_name = 'deblurring' 
+version = 'unet_deblurring'
+chkp_name = ''
+path_parts = [base_path, 'weights', experiment_name, version, chkp_name]
+path_to_weights = os.path.join(*path_parts)
 
 for step in range(20):
     print("Eval OCR for step ", step)

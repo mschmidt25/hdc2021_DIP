@@ -15,6 +15,7 @@ from hdc2021_challenge.utils.ocr import evaluateImage
 from hdc2021_challenge.deblurrer.UNet_deblurrer import UNetDeblurrer
 
 
+# Radii for the bokeh blur model for each step
 RADIUS_DICT = {
     0 : 1.0*8., 
     1 : 1.2*8., 
@@ -38,35 +39,60 @@ RADIUS_DICT = {
     19 : 19.4*8.
 }
 
+# Number of DIP epochs per Step
 EPOCH_DICT = {
-    0 : 100, 
-    1 : 200, 
-    2 : 300,
-    3 : 400, 
-    4 : 500,
-    5 : 600,
-    6 : 700,
-    7 : 800, 
-    8 : 900,
-    9 : 1000,
-    10 : 1100,
-    11 : 1200,
-    12 : 1300,
-    13 : 1400,
-    14 : 1500,
-    15 : 1600,
-    16 : 1700,
-    17 : 1800, 
-    18 : 1900, 
-    19 : 2000
+    0 : 400, 
+    1 : 800, 
+    2 : 1200,
+    3 : 1600, 
+    4 : 2000,
+    5 : 2400,
+    6 : 2800,
+    7 : 3200, 
+    8 : 3600,
+    9 : 4000,
+    10 : 4400,
+    11 : 4800,
+    12 : 5200,
+    13 : 5600,
+    14 : 6000,
+    15 : 6400,
+    16 : 6800,
+    17 : 7200, 
+    18 : 7600, 
+    19 : 8000
 }
 
+# Downsampling sizes
+DOWN_SHAPES = {
+    1 : (1460, 2360),
+    2 : (730, 1180),
+    3 : (365, 590)
+}
+
+# Tolerance above which the DIP post-processing is started
 DATA_TOLERANCE = 0.075
 
 
 class DIPDeblurrer(pl.LightningModule):
-    def __init__(self, path_to_weights, step, lr=1e-4, downsampling=2,  which_loss="both",
-                 kappa=1e-6, epochs=10000):
+    def __init__(self, path_to_weights:str, step:int, lr:float=1e-4, downsampling:int=3,  which_loss:str="both",
+                 kappa:float=1e-6):
+        """
+        Deep Image Prior deblurrer, which uses a pre-trained U-Net as initialization. If the output of the U-Net
+        is above the DATA_TOLERANCE, the DIP will adapt its parameters to better fit the measurement data.
+        As a forward model, a simple bokeh blur is used. The DIP is regularized by TV.
+
+        Args:
+            path_to_weights (str): Path to the general location of all U-Net weights
+            step (int): Current blur step.
+            lr (float, optional): Learning rate. Defaults to 1e-4.
+            downsampling (int, optional): Power 2^(x-1) of the average pooling downsampling, e.g. 
+                                          downsampling=3 -> 2²=4 times spatial downsampling for
+                                          the input. The output will be automatically upsampled
+                                          by nearest interpolation to match the ground truth size.. Defaults to 3.
+            which_loss (str, optional): Choose the loss function from "l1", "mse" and "both". Defaults to "both".
+            kappa (float, optional): Regularization weight for TV. Defaults to 1e-6.
+        """
         super().__init__()
 
         self.lr = lr
@@ -75,7 +101,6 @@ class DIPDeblurrer(pl.LightningModule):
         self.downsampling = downsampling
         self.path_to_weights = path_to_weights
         self.kappa = kappa
-        self.epochs = epochs
 
         self.set_blur(step)
 
@@ -92,12 +117,12 @@ class DIPDeblurrer(pl.LightningModule):
         self.set_network(step)
 
         if self.downsampling > 1:
-            self.down = [nn.AvgPool2d(kernel_size=3, stride=2, padding=1) for i in range(self.downsampling)]
+            self.down = [nn.AvgPool2d(kernel_size=3, stride=2, padding=1) for i in range(self.downsampling-1)]
             self.down = nn.Sequential(*self.down)
-            self.up = nn.Upsample(size=(1460, 2360), mode='nearest')
+            self.up = nn.Upsample(size=DOWN_SHAPES[1], mode='nearest')
 
     def set_blur(self, step):
-        self.blur = BokehBlur(r=RADIUS_DICT[step]/(2**self.downsampling), shape=(365, 590))
+        self.blur = BokehBlur(r=RADIUS_DICT[step]/(2**(self.downsampling-1)), shape=DOWN_SHAPES[self.downsampling])
 
     def set_network(self, step):
         path = self.path_to_weights + 'step_' + str(step) + ".ckpt"
@@ -173,7 +198,8 @@ class DIPDeblurrer(pl.LightningModule):
         else:
             x, _ = batch
             x = self.down(x)
-            y = self.blur(x)
+            y = self.blur(x) 
+            y = y + torch.randn(y.shape, device=self.device)*0.005
 
         x_hat = self.net(y)
         y_hat = self.blur(x_hat)

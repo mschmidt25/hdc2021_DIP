@@ -1,3 +1,9 @@
+"""
+The Deep Image Prior does not require a training. Nonetheless, it can be helpful
+to evaluate the number of epochs needed to create convincing results. In this
+script, one can train the model on one image of the deblur or STL10 data.
+"""
+
 import os
 
 import pytorch_lightning as pl
@@ -11,16 +17,25 @@ from hdc2021_challenge.utils.blurred_dataset import BlurredDataModule
 from hdc2021_challenge.deblurrer.DIP_deblurrer import DIPDeblurrer
 
 
+# Basic training parameters
 start_step = 0
-#data = 'deblur'
 data = 'stl10'
-
+stl_root = "/localdata/STL10"
+download_stl = False
 downsampling = 3
-path_to_weights = "../weights/deblurring/unet_deblurring/"
+epochs = 5
 
+# General path to the U-Net weights
+base_path = os.path.join(os.path.dirname(__file__), '..')
+experiment_name = 'deblurring' 
+version = 'unet_deblurring'
+chkp_name = ''
+path_parts = [base_path, 'weights', experiment_name, version, chkp_name]
+path_to_weights = os.path.join(*path_parts)
+
+# "Train" on all 20 steps
 for step in range(start_step, 20):
-    epochs = 400*(step+1)
-
+    # Configure the reconstructor
     reconstructor = DIPDeblurrer(path_to_weights=path_to_weights,
                                 step=step,
                                 lr=1e-4,
@@ -28,6 +43,7 @@ for step in range(start_step, 20):
                                 which_loss="both",
                                 kappa=1e-6)
 
+    # Load the dataset
     if data == 'deblur':
         dataset = BlurredDataModule(batch_size=1, blurring_step=step,
                                     num_data_loader_workers=0)
@@ -48,7 +64,8 @@ for step in range(start_step, 20):
         transforms.ToTensor(), 
         transforms.Resize(size=(1460, 2360))])
 
-        trainset_stl10 =  torchvision.datasets.STL10(root="/localdata/STL10", split='train', download=False, transform=transform_stl10)
+        trainset_stl10 =  torchvision.datasets.STL10(root=stl_root, split='train',
+                                                     download=download_stl, transform=transform_stl10)
         dataloader = DataLoader(trainset_stl10, batch_size=1, shuffle=False, num_workers=0)
 
         checkpoint_callback = ModelCheckpoint(dirpath=None,
@@ -59,6 +76,7 @@ for step in range(start_step, 20):
     else:
         NotImplementedError()
 
+    # Folder for storing weights and the tensorboard log
     base_path = 'deblurring_experiments'
     experiment_name = 'dip_deblurring'
     blurring_step = "step_" + str(step)
@@ -66,6 +84,7 @@ for step in range(start_step, 20):
     log_dir = os.path.join(*path_parts)
     tb_logger = pl_loggers.TensorBoardLogger(log_dir)
 
+    # Arguments for the Pytorch Lightning trainer
     trainer_args = {'gpus': [0],
                     'default_root_dir': log_dir,
                     'callbacks': [checkpoint_callback],
@@ -76,5 +95,6 @@ for step in range(start_step, 20):
                     'log_every_n_steps': 1,
                     'limit_train_batches': 1}
 
+    # Train the model
     trainer = pl.Trainer(max_epochs=epochs, **trainer_args)
     trainer.fit(reconstructor, train_dataloader=dataloader)
