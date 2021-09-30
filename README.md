@@ -99,4 +99,4 @@ reconstruction, the OCR accuracy on the middle text line is reported.
 ![Blur step 15](example_images/step_15test_sample8.png "Step 15")
 
 ### Step 19
-![Blur step 19](example_images/step_19test_sample19.png "Step 19")
+![Blur step 19](example_images/step_19test_sample12.png "Step 19")
