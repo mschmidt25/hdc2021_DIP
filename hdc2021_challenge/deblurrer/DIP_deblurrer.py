@@ -70,8 +70,31 @@ DOWN_SHAPES = {
     3 : (365, 590)
 }
 
-# Tolerance above which the DIP post-processing is started
-DATA_TOLERANCE = 0.075
+# Tolerance above which the DIP post-processing is started. The values gets
+# higher for every few epochs, since our forward model is also less accurate
+# for higher steps
+DATA_TOLERANCE = {
+    0 : 0.075, 
+    1 : 0.075, 
+    2 : 0.075,
+    3 : 0.075, 
+    4 : 0.075,
+    5 : 0.085,
+    6 : 0.085,
+    7 : 0.085, 
+    8 : 0.085,
+    9 : 0.085,
+    10 : 0.095,
+    11 : 0.095,
+    12 : 0.095,
+    13 : 0.095,
+    14 : 0.095,
+    15 : 0.1,
+    16 : 0.1,
+    17 : 0.1, 
+    18 : 0.1, 
+    19 : 0.1 
+}
 
 
 class DIPDeblurrer(pl.LightningModule):
@@ -151,7 +174,7 @@ class DIPDeblurrer(pl.LightningModule):
         discrepancy = discrepancy.detach().cpu().numpy()
 
         # DIP Postprocessing (if necessary)
-        if discrepancy > DATA_TOLERANCE:
+        if discrepancy > DATA_TOLERANCE[self.step]:
             print('The data discrepancy is above the tolerance: ' + str(discrepancy))
             print('Starting DIP post-processing...')
 

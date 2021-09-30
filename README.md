@@ -84,19 +84,19 @@ Random reconstructions from the test set on different blur steps. For each
 reconstruction, the OCR accuracy on the middle text line is reported.
 
 ### Step 2
-![Blur step 2](example_images/step_2test_sample0.png "Step 2")
+![Blur step 2](example_images/step_2test_sample6.png "Step 2")
 
 ### Step 5
-![Blur step 5](example_images/step_5test_sample9.png "Step 5")
+![Blur step 5](example_images/step_5test_sample15.png "Step 5")
 
 ### Step 10
-![Blur step 10](example_images/step_10test_sample5.png "Step 10")
+![Blur step 10](example_images/step_10test_sample8.png "Step 10")
 
 ### Step 12
-![Blur step 12](example_images/step_12test_sample3.png "Step 12")
+![Blur step 12](example_images/step_12test_sample7.png "Step 12")
 
 ### Step 15
-![Blur step 15](example_images/step_15test_sample17.png "Step 15")
+![Blur step 15](example_images/step_15test_sample8.png "Step 15")
 
 ### Step 19
-![Blur step 19](example_images/step_19test_sample18.png "Step 19")
+![Blur step 19](example_images/step_19test_sample19.png "Step 19")
