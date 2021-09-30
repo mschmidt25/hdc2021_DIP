@@ -80,7 +80,7 @@ for step in range(20):
         print(ocr_acc[-1])
 
         if ocr_acc[-1] < 70.:
-            _, ax = plot_images([obs_cpu[0,0,:,:], reco[0,0,:,:].T, gt[0,0,:,:].T],
+            _, ax = plot_images([obs_cpu[0,0,:,:].T, reco[0,0,:,:].T, gt[0,0,:,:].T],
                                     fig_size=(10, 4), vrange='equal', cbar='auto')
             ax[0].set_title('Measurement')
             ax[1].set_title('Reconstruction - ' + str(ocr_acc[-1]))
