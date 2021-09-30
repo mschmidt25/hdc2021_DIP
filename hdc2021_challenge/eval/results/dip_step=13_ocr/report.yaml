@@ -1,0 +1,8 @@
+results:
+  mean_ocr_acc: 67.65
+  mean_psnr: 20.49507113546133
+  mean_ssim: 0.5655209836556105
+  std_psnr: 0.3306878604640523
+  std_ssim: 0.007676649200531239
+settings:
+  num_test_images: 20
