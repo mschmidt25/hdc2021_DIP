@@ -43,7 +43,7 @@ Overall the reconstruction works as follows:
 1. Create first reconstruction with the U-Net model: $\hat{x} = F_\theta(y^\delta)$
 2. Check data consistency $\mathcal{D}$ of the initial reconstruction: $\mathcal{D}(\mathcal{A}\hat{x}, y^\delta)$
 3. If the data consistency is below a certain threshold, we accept the reconstruction $\hat{x} $.
-4. If the data consistency is above the threshold, we adapt the weights of the U-Net with the DIP method: $\hat{\theta} = arg\min_\theta \mathcal{D}(\mathcal{A}F_\theta(y^\delta), y^\delta) + \kappa TV(F_\theta(y^\delta)$
+4. If the data consistency is above the threshold, we adapt the weights of the U-Net with the DIP method: $\hat{\theta} = arg\min_\theta \mathcal{D}(\mathcal{A}F_\theta(y^\delta), y^\delta) + \kappa TV(F_\theta(y^\delta))$
 5. In case of the DIP post-processing of the weights, the final reconstruction is given by: $\hat{x} = F_\hat{\theta}(y^\delta)$
 
 ### Approximate Forward Model 
@@ -56,7 +56,15 @@ with
 
 This model works well for small blurring levels. For higher blurring levels the average error between the approximate model and the real measurements gets bigger.
 
-### DIP and data consistency threshold
+### DIP
+The Deep Image Prior is an unsupervised reconstruction method, which works with a single measurement. It uses a forward model to simulate the measurement process and allow for a comparison with the noisy measurement. Based on this information, the goal is to adapt (often randomly initialized) network weights $\theta$ to minimize the data discrepancy $\mathcal{D}$ for a fixed network input $z$. In our case, we use the noisy measurement $y^\delta$ as the fixed input and the pre-trained U-Net weights for the initial parameter choice of the DIP network. In addition, the problem is regularized by a weighted total variation (TV) term to avoid overfitting to the noise. The DIP minimization problem is:
+
+$$\hat{theta} arg\min_\theta \mathcal{D}(\mathcal{A}F_\theta(y^\delta), y^\delta) + \kappa TV(F_\theta(y^\delta))$$
+
+In general, this is minimized by gradient descent methods, e.g. ADAM in our experiments. Finally, the best parameters $\hat{theta}$ are used to create the reconstruction $\hat{x} = F_\hat{\theta}(y^\delta)$.
+
+### Data Consistency Threshold
+The data consistency threshold manages, if the DIP adaption of the U-Net is necessary for the current sample. The threshold was empirically chosen based on data consistency values from in-distribution samples and the error of our approximate forward model. Since our forward model gets worse for higher blur steps, we slightly increase the threshold every 5 blur steps.
 
 
 ### Training
