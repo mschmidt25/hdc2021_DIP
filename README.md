@@ -37,12 +37,30 @@ python hdc2021_challenge/main.py path-to-input-files path-to-output-files step
 If you want to use the other methods for training etc., change the BATH_PATH in data_util.py to the directory of the HDC Challenge data. 
 
 ## Method
+This method combines the regularized Deep Image Prior (DIP) approach with a pre-trained U-Net model $$F_\theta$$. The U-Net acts as a fully-learned inversion model $$F:Y \rightarrow x$$ and is trained on the blurry text images. The downside of such fully-learned models (for inversion or post-processing) is the missing data consistency. The models will generally perform well on data that is similiar to the distribution of the training samples, but out-of-distribution samples can severely harm the model's performance. Therefore, we introduce a second step, where we use the formulation of the Deep Image Prior to adapt the weights of the U-Net in case of missing data consistency. Using pre-trained weights for the DIP also has the advantage, that it will need less iterations to converge. To check the data consistency, we need a forward model. In our case, we approximate the blurring operation with a convolution.
 
+Overall the reconstruction works as follows:
+1. Create first reconstruction with the U-Net model: $\hat{x} = F_\theta(y^\delta)$
+2. Check data consistency $\mathcal{D}$ of the initial reconstruction: $\mathcal{D}(\mathcal{A}\hat{x}, y^\delta)$
+3. If the data consistency is below a certain threshold, we accept the reconstruction $\hat{x} $.
+4. If the data consistency is above the threshold, we adapt the weights of the U-Net with the DIP method: $\hat{\theta} = arg\min_\theta \mathcal{D}(\mathcal{A}F_\theta(y^\delta), y^\delta) + \kappa TV(F_\theta(y^\delta)$
+5. In case of the DIP post-processing of the weights, the final reconstruction is given by: $\hat{x} = F_\hat{\theta}(y^\delta)$
 
-### Reconstruction
+### Approximate Forward Model 
+For a fixed blurring level the out-of-focus blur can be modeled by as a linear, position invariant convolution with a circular point-spread-function: 
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=g_\eta&space;=&space;\mathcal{A}&space;f&space;&plus;&space;\eta&space;=&space;k&space;*&space;f&space;&plus;&space;\eta" target="_blank"><img src="https://latex.codecogs.com/gif.latex?g_\eta&space;=&space;\mathcal{A}&space;f&space;&plus;&space;\eta&space;=&space;k&space;*&space;f&space;&plus;&space;\eta" title="g_\eta = \mathcal{A} f + \eta = k * f + \eta" /></a>
+with 
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=k(x)&space;=&space;\left\{\begin{array}{lr}&space;\frac{1}{\pi&space;r^2},&space;&&space;\text{for&space;}&space;\|&space;x&space;\|^2&space;\le&space;r^2\\&space;0,&space;&&space;\text{else&space;}&space;\end{array}\right\}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?k(x)&space;=&space;\left\{\begin{array}{lr}&space;\frac{1}{\pi&space;r^2},&space;&&space;\text{for&space;}&space;\|&space;x&space;\|^2&space;\le&space;r^2\\&space;0,&space;&&space;\text{else&space;}&space;\end{array}\right\}" title="k(x) = \left\{\begin{array}{lr} \frac{1}{\pi r^2}, & \text{for } \| x \|^2 \le r^2\\ 0, & \text{else } \end{array}\right\}" /></a>
+
+This model works well for small blurring levels. For higher blurring levels the average error between the approximate model and the real measurements gets bigger.
+
+### DIP and data consistency threshold
 
 
 ### Training
+A seperate U-Net model for each blurring step was trained on the blurry text images. The DIP does not need training.
 
 
 ### Reference results
